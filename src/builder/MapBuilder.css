@@ -1,0 +1,7 @@
+.map-builder .current {
+    fill: red;
+}
+
+.map-builder line {
+    stroke: black;
+}
