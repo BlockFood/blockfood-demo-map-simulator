@@ -8,7 +8,7 @@ import MAP_DATA from './data/MapData'
 import Map from './component/Map'
 import MapBuilder from './builder/MapBuilder'
 
-const BUILD_MAP = true
+const BUILD_MAP = false
 
 class App extends React.Component {
     constructor(props) {
@@ -18,8 +18,20 @@ class App extends React.Component {
             step: 0,
             customer: null,
             restaurantSelectedId: null,
-            courier: null
+            courier: null,
+            simulate1: 0,
+            simulate2: 0
         }
+
+        // todo: remove this dev helper
+        // this.state = {
+        //     step: 3,
+        //     customer: [50, 500],
+        //     restaurantSelectedId: '0',
+        //     courier: [500, 50],
+        //     simulate1: 0,
+        //     simulate2: 0
+        // }
 
         this.canGoNext = this.canGoNext.bind(this)
         this.incrStep = this.incrStep.bind(this)
@@ -34,13 +46,13 @@ class App extends React.Component {
     }
 
     canGoNext() {
-        const {step, customer, restaurantSelectedId, courier} = this.state
+        const {step, customer, restaurantSelectedId, courier, simulate1} = this.state
 
         return !(
             (step === 0 && !customer) ||
             (step === 1 && !restaurantSelectedId) ||
             (step === 2 && !courier) ||
-            step === 3 ||
+            (step === 3 && simulate1 < 2) ||
             step === 4
         )
     }
@@ -55,7 +67,7 @@ class App extends React.Component {
             const mapElement = ReactDOM.findDOMNode(this).querySelector('.mapWrapper')
 
             mapElement.addEventListener('click', (event) => {
-                const {step} = this.state
+                const {step, simulate1, simulate2} = this.state
 
                 const eventPoint = [event.offsetX, event.offsetY]
 
@@ -72,12 +84,18 @@ class App extends React.Component {
                 else if (step === 2) {
                     this.setState({courier: eventPoint})
                 }
+                else if (step === 3 && simulate1 === 0) {
+                    this.setState({simulate1: 1})
+                }
+                else if (step === 4 && simulate2 === 0) {
+                    this.setState({simulate2: 1})
+                }
             }, false)
         }
     }
 
     render() {
-        const {step, customer, restaurantSelectedId, courier} = this.state
+        const {step, customer, restaurantSelectedId, courier, simulate1, simulate2} = this.state
 
         return (
             <div className="App">
@@ -89,7 +107,10 @@ class App extends React.Component {
                          showOnlyRestaurantSelected={step >= 2}
                          customer={customer}
                          courier={courier}
-                         pathOptions={{visible: !!courier, path2dasharray: step < 4}}/>
+                         pathOptions={{visible: !!courier, path2dasharray: step < 4}}
+                         simulate1={simulate1 === 1}
+                         onSimulate1Done={() => this.setState({simulate1: 2})}
+                         simulate2={simulate2 === 1}/>
                     {BUILD_MAP && <MapBuilder/>}
                 </div>
                 <div className="toolbar">
