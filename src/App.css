@@ -12,6 +12,7 @@
 .mapWrapper {
   position: relative;
   border: 2px solid black;
+  overflow: hidden;
 }
 
 .mapWrapper svg {

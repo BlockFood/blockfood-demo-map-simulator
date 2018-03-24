@@ -175,7 +175,7 @@ class Map extends React.Component {
                 })}
                 <svg>
                     {path1 && <path d={this.getPathFromListOfPoints(path1)}/>}
-                    {path2 && <path d={this.getPathFromListOfPoints(path2)} style={{strokeDasharray: pathOptions.path2dasharray ? 10 : 0}}/>}
+                    {path2 && <path d={this.getPathFromListOfPoints(path2)} style={{strokeDasharray: pathOptions.path2dasharray ? 7 : 0}}/>}
                 </svg>
                 {customer && <div className="customer" style={{left: customer[0], top: customer[1]}}><i className="fas fa-user"/></div>}
                 {courier && <div className="courier" style={courierStyle}><i className="fas fa-car"/></div>}
