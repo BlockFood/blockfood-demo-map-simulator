@@ -3,12 +3,15 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import './App.css'
 import '../node_modules/reset-css/reset.css'
-import {distance} from './utils/Geometry'
+import {distance, nearestPointOnLine, splitLine} from './utils/Geometry'
 import MAP_DATA from './data/MapData'
 import Map from './component/Map'
 import MapBuilder from './builder/MapBuilder'
 
 const BUILD_MAP = false
+
+const ADJUST_SPEED = 1
+const ADJUST_MARGIN = 15
 
 class App extends React.Component {
     constructor(props) {
@@ -17,8 +20,10 @@ class App extends React.Component {
         this.state = {
             step: 0,
             customer: null,
+            tmpCustomerPoints: [],
             restaurantSelectedId: null,
             courier: null,
+            tmpCourierPoints: [],
             simulate1: 0,
             simulate2: 0
         }
@@ -35,10 +40,20 @@ class App extends React.Component {
         return distance(MAP_DATA.restaurants[nearRestaurantId].position, eventPoint) < 100 ? nearRestaurantId : null
     }
 
+    getNearestPosition(target) {
+        const projections = _.map(MAP_DATA.roadNodesLines, ([line1, line2]) => {
+            const {position, dist} = nearestPointOnLine(line1, line2, target)
+            return {position, dist}
+        })
+
+        return _.minBy(projections, projection => projection.dist).position
+    }
+
     canGoNext() {
-        const {step, customer, restaurantSelectedId, courier, simulate1} = this.state
+        const {step, customer, tmpCustomerPoints, restaurantSelectedId, courier, tmpCourierPoints, simulate1} = this.state
 
         return !(
+            tmpCustomerPoints.length > 0 || tmpCourierPoints.length > 0 ||
             (step === 0 && !customer) ||
             (step === 1 && !restaurantSelectedId) ||
             (step === 2 && !courier) ||
@@ -60,9 +75,15 @@ class App extends React.Component {
                 const {step, simulate1, simulate2} = this.state
 
                 const eventPoint = [event.offsetX, event.offsetY]
+                const nearestEventPoint = this.getNearestPosition(eventPoint)
 
                 if (step === 0) {
-                    this.setState({customer: eventPoint})
+                    let tmpCustomerPoints = []
+                    if (distance(eventPoint, nearestEventPoint) > ADJUST_SPEED * ADJUST_MARGIN) {
+                        const points = splitLine(eventPoint, nearestEventPoint, ADJUST_SPEED)
+                        tmpCustomerPoints = _.take(points, points.length - ADJUST_MARGIN)
+                    }
+                    this.setState({customer: eventPoint, tmpCustomerPoints})
                 }
                 else if (step === 1) {
                     const nearRestaurantId = this.getNearRestaurantId(eventPoint)
@@ -72,7 +93,13 @@ class App extends React.Component {
                     }
                 }
                 else if (step === 2) {
-                    this.setState({courier: eventPoint})
+                    let tmpCourierPoints = []
+                    if (distance(eventPoint, nearestEventPoint) > ADJUST_SPEED * ADJUST_MARGIN) {
+                        const points = splitLine(eventPoint, nearestEventPoint, ADJUST_SPEED)
+                        tmpCourierPoints = _.take(points, points.length - ADJUST_MARGIN)
+                    }
+
+                    this.setState({courier: eventPoint, tmpCourierPoints})
                 }
                 else if (step === 3 && simulate1 === 0) {
                     this.setState({simulate1: 1})
@@ -87,6 +114,27 @@ class App extends React.Component {
                     this.incrStep()
                 }
             }, false)
+
+            const adjustPosition = () => {
+                const {tmpCustomerPoints, customer, tmpCourierPoints, courier} = this.state
+
+                if (tmpCustomerPoints.length > 0) {
+                    const newTmpCustomerPoints = _.takeRight(tmpCustomerPoints,  4 * (tmpCustomerPoints.length / 5))
+                    const newCustomerPosition = newTmpCustomerPoints.length > 0 ? newTmpCustomerPoints[0]: customer
+
+                    this.setState({tmpCustomerPoints: newTmpCustomerPoints, customer: newCustomerPosition})
+                }
+                else if (tmpCourierPoints.length > 0) {
+                    const newTmpCourierPoints = _.takeRight(tmpCourierPoints, 4 * (tmpCourierPoints.length / 5))
+                    const newCourierPosition = newTmpCourierPoints.length > 0 ? newTmpCourierPoints[0] : courier
+
+                    this.setState({tmpCourierPoints: newTmpCourierPoints, courier: newCourierPosition})
+                }
+
+                requestAnimationFrame(adjustPosition)
+            }
+
+            adjustPosition()
         }
     }
 

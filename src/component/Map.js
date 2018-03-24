@@ -74,6 +74,7 @@ class Map extends React.Component {
         const points = _.map(route.path(from, additionalPoint.id), roadNodeId => {
             return roadNodeId === additionalPoint.id ? additionalPoint.properties.position : roadNodes[roadNodeId].position
         })
+        points.push(target)
 
         return _.flatten(_.compact(_.map(points, (point, index) => {
             if (index < points.length - 1) {
@@ -116,30 +117,14 @@ class Map extends React.Component {
     }
 
     simulate2() {
-        let lastPoints = splitLine(this.state.path2[this.state.path2.length - 1], this.props.customer, SPEED)
-        lastPoints = lastPoints.splice(0, lastPoints.length - 2)
-
-        const goToEnd = () => {
-            const newCourierPosition = lastPoints.shift()
-
-            this.setState({courierPosition: newCourierPosition})
-
-            if (lastPoints.length > 0) {
-                requestAnimationFrame(goToEnd)
-            }
-        }
-
         const run = () => {
-            const newPath2 = this.state.path2.slice(1)
+            const newPath2 = this.state.path2.length === 10 ? [] : this.state.path2.slice(1)
             const newCourierPosition = newPath2.length > 0 ? newPath2[0]: this.state.courierPosition
 
             this.setState({path2: newPath2, courierPosition: newCourierPosition})
 
             if (newPath2.length > 0) {
                 requestAnimationFrame(run)
-            }
-            else {
-                requestAnimationFrame(goToEnd)
             }
         }
 
