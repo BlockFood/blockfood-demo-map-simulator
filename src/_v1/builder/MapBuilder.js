@@ -1,8 +1,8 @@
 import * as _ from 'lodash'
 import React from 'react'
 import ReactDOM from 'react-dom'
-import {distance} from '../utils/Geometry'
-import MAP_DATA from '../data/MapData'
+import {distance} from '../../utils/Geometry'
+import MAP_DATA from '../../data/MapData'
 
 import './MapBuilder.css'
 

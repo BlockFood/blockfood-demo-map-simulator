@@ -1,7 +1,7 @@
 import React from 'react'
 import * as _ from 'lodash'
 import Graph from 'node-dijkstra'
-import {distance, nearestPointOnLine, splitPath} from '../utils/Geometry'
+import {distance, nearestPointOnLine, splitPath} from '../../utils/Geometry'
 
 import './Map.css'
 

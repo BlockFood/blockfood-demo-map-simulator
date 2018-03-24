@@ -1,0 +1,12 @@
+import image from '<somewhere>'
+
+export default {
+    image,
+    dimensions: {
+        width: <image_with>,
+        height: <image_height>
+    },
+    graph: {},
+    graphLines: {},
+    restaurants: []
+}

@@ -1,0 +1,17 @@
+.map-builder svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+.map-builder svg .current {
+    fill: red;
+}
+
+.map-builder svg line {
+    stroke: black;
+    stroke-width: 2px;
+}

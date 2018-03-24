@@ -1,4 +1,4 @@
-import image from './map.jpg'
+import image from './map1.jpg'
 
 export default {
     image,
@@ -6,7 +6,7 @@ export default {
         width: 1100,
         height: 800
     },
-    roadNodes: {
+    graph: {
         "0": {"position": [1, 90], "connections": {"1": 34}},
         "1": {"position": [31, 74], "connections": {"0": 34, "5": 36.069377593742864}},
         "2": {
@@ -368,7 +368,7 @@ export default {
             "connections": {"52": 79.20227269466452, "54": 77.78174593052023, "55": 111.13955191559843}
         }
     },
-    roadNodesLines: {
+    graphLines: {
         "0_1": [[1, 90], [31, 74]],
         "1_5": [[31, 74], [56, 100]],
         "2_3": [[79, 140], [138, 109]],
@@ -536,21 +536,21 @@ export default {
         "143_144": [[240, 690], [251, 686]],
         "144_146": [[251, 686], [255, 670]]
     },
-    restaurants: {
-        '0': {
+    restaurants: [
+        {
             name: 'Wokbar',
             position: [128, 88],
             labelDirection: 'top'
         },
-        '1': {
+        {
             name: 'Los Pollos Hermanos',
             position: [857, 418],
             labelDirection: 'bottom'
         },
-        '2': {
+        {
             name: 'PastaFiesta',
             position: [260, 645],
             labelDirection: 'top'
         }
-    }
+    ]
 }
