@@ -26,6 +26,22 @@ class MapBuilder extends React.Component {
         return distance(roadNodes[nearRoadNodeId].position, eventPoint) < 6 ? nearRoadNodeId : null
     }
 
+    computeRoadNodesLines(roadNodes) {
+        const roadNodeLines = {}
+        _.forEach(roadNodes, (roadNode, roadNodesId1) => {
+            _.forEach(_.keys(roadNode.connections), roadNodesId2 => {
+                const min = Math.min(+roadNodesId1, +roadNodesId2)
+                const max = Math.max(+roadNodesId1, +roadNodesId2)
+                roadNodeLines[min + '_' + max] = [
+                    roadNodes[min].position,
+                    roadNodes[max].position
+                ]
+            })
+        })
+
+        return roadNodeLines
+    }
+
     componentDidMount() {
         const containerElement = ReactDOM.findDOMNode(this).parentElement
         containerElement.addEventListener('click', (event) => {
@@ -84,6 +100,8 @@ class MapBuilder extends React.Component {
                 window.roadNodes = newRoads
                 this.setState({roadNodes: newRoads, currentRoadNodeId: i + ''})
             }
+
+            window.roadNodesLines = this.computeRoadNodesLines(window.roadNodes)
         }, false)
     }
 
