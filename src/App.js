@@ -23,16 +23,6 @@ class App extends React.Component {
             simulate2: 0
         }
 
-        // todo: remove this dev helper
-        // this.state = {
-        //     step: 3,
-        //     customer: [50, 500],
-        //     restaurantSelectedId: '0',
-        //     courier: [500, 50],
-        //     simulate1: 0,
-        //     simulate2: 0
-        // }
-
         this.canGoNext = this.canGoNext.bind(this)
         this.incrStep = this.incrStep.bind(this)
     }
@@ -89,6 +79,12 @@ class App extends React.Component {
                 }
                 else if (step === 4 && simulate2 === 0) {
                     this.setState({simulate2: 1})
+                }
+            }, false)
+
+            window.addEventListener('keydown', (event) => {
+                if (event.keyCode === 13) {
+                    this.incrStep()
                 }
             }, false)
         }

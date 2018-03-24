@@ -5,7 +5,7 @@ import {distance, nearestPointOnLine, splitLine} from '../utils/Geometry'
 
 import './Map.css'
 
-const SPEED = 1
+const SPEED = 2
 
 class Map extends React.Component {
     constructor(props){
@@ -75,14 +75,11 @@ class Map extends React.Component {
             return roadNodeId === additionalPoint.id ? additionalPoint.properties.position : roadNodes[roadNodeId].position
         })
 
-        return points
-
-        // TODO: fix this:
-        // return _.flatten(_.compact(_.map(points, (point, index) => {
-        //     if (index < points.length - 2) {
-        //         return splitLine(point, points[index + 1], SPEED)
-        //     }
-        // })))
+        return _.flatten(_.compact(_.map(points, (point, index) => {
+            if (index < points.length - 1) {
+                return splitLine(point, points[index + 1], SPEED)
+            }
+        })))
     }
 
     simulate1() {
