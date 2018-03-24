@@ -3,7 +3,7 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import './App.css'
 import '../node_modules/reset-css/reset.css'
-import {distance, nearestPointOnLine, splitLine} from './utils/Geometry'
+import {distance, nearestPointOnLine, splitPath} from './utils/Geometry'
 import MAP_DATA from './data/MapData'
 import Map from './component/Map'
 import MapBuilder from './builder/MapBuilder'
@@ -27,6 +27,17 @@ class App extends React.Component {
             simulate1: 0,
             simulate2: 0
         }
+
+        // this.state = {
+        //     step: 3,
+        //     customer: [50, 600],
+        //     tmpCustomerPoints: [],
+        //     restaurantSelectedId: '0',
+        //     courier: [520, 20],
+        //     tmpCourierPoints: [],
+        //     simulate1: 0,
+        //     simulate2: 0
+        // }
 
         this.canGoNext = this.canGoNext.bind(this)
         this.incrStep = this.incrStep.bind(this)
@@ -80,7 +91,7 @@ class App extends React.Component {
                 if (step === 0) {
                     let tmpCustomerPoints = []
                     if (distance(eventPoint, nearestEventPoint) > ADJUST_SPEED * ADJUST_MARGIN) {
-                        const points = splitLine(eventPoint, nearestEventPoint, ADJUST_SPEED)
+                        const points = splitPath([eventPoint, nearestEventPoint], ADJUST_SPEED)
                         tmpCustomerPoints = _.take(points, points.length - ADJUST_MARGIN)
                     }
                     this.setState({customer: eventPoint, tmpCustomerPoints})
@@ -95,7 +106,7 @@ class App extends React.Component {
                 else if (step === 2) {
                     let tmpCourierPoints = []
                     if (distance(eventPoint, nearestEventPoint) > ADJUST_SPEED * ADJUST_MARGIN) {
-                        const points = splitLine(eventPoint, nearestEventPoint, ADJUST_SPEED)
+                        const points = splitPath([eventPoint, nearestEventPoint], ADJUST_SPEED)
                         tmpCourierPoints = _.take(points, points.length - ADJUST_MARGIN)
                     }
 

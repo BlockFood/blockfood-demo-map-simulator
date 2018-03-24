@@ -8,13 +8,15 @@
 
 .map .restaurant, .map .customer, .map .courier {
     position: absolute;
+    top: 0;
+    left: 0;
     width: 28px;
     height: 28px;
     background: black;
     margin-top: -14px;
     margin-left: -14px;
     text-align: center;
-    line-height: 30px;
+    line-height: 28px;
     border-radius: 100%;
     color: white;
 }
@@ -50,7 +52,7 @@
     margin-bottom: 7px;
 }
 
-.map svg path {
+.map svg > path {
     fill: transparent;
     stroke: black;
     stroke-width: 6px;

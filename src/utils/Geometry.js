@@ -1,6 +1,6 @@
+import * as _ from 'lodash'
 import Segment2 from 'segment2'
 import Vec2 from 'vec2'
-import * as _ from "lodash";
 
 export const distance = (p1, p2) => {
     return Math.sqrt(Math.pow(p2[0] - p1[0], 2) + Math.pow(p2[1] - p1[1], 2))
@@ -13,28 +13,48 @@ export const nearestPointOnLine = (p1, p2, p3) => {
     return {position, dist: distance(position, p3)}
 }
 
-export const splitLine = (p1, p2, length) => {
-    const dist = distance(p1, p2)
-    const vector = []
-    if(Math.abs(dist) < 1e-9) {
-        vector[0] = 0;
-        vector[1] = 0;
-    } else {
-        vector[0] = (p2[0] - p1[0]) / dist;
-        vector[1] = (p2[1] - p1[1]) / dist;
+export const splitPath = (points, speed) => {
+    const getVector = (p1, p2) => {
+        const dist = distance(p1, p2)
+        const vector = []
+        if(Math.abs(dist) < 1e-9) {
+            vector[0] = 0
+            vector[1] = 0
+        } else {
+            vector[0] = (p2[0] - p1[0]) / dist
+            vector[1] = (p2[1] - p1[1]) / dist
+        }
+        return vector
     }
 
-    let parts = 1
-    while (parts * length < dist) parts++
+    const result = []
+    let rest = 0
+    _.forEach(points, (point, index) => {
+        if (index < points.length - 1) {
+            const p1 = point, p2 = points[index + 1]
+            const dist = distance(p1, p2)
 
-    const points = [p1]
-    _.times(parts, (i) => {
-        const x = p1[0] + (i * vector[0] * length)
-        const y = p1[1] + (i * vector[1] * length)
+            if (dist < rest) {
+                rest -= dist
+            }
+            else {
+                const vector = getVector(p1, p2)
 
-        points.push([x, y])
+                const fp = [p1[0] + (vector[0] * rest), p1[1] + (vector[1] * rest)]
+                result.push(fp)
+
+                const parts = Math.floor((dist - rest) / speed)
+                rest = (dist - rest) - (parts * speed)
+
+                _.times(parts, (i) => {
+                    const np = [fp[0] + ((i + 1) * vector[0] * speed), fp[1] + ((i + 1) * vector[1] * speed)]
+                    result.push(np)
+                })
+            }
+        }
     })
-    points.push(p2)
 
-    return points
+    rest > 0 && result.push(_.last(points))
+
+    return result
 }

@@ -1,7 +1,7 @@
 import React from 'react'
 import * as _ from 'lodash'
 import Graph from 'node-dijkstra'
-import {distance, nearestPointOnLine, splitLine} from '../utils/Geometry'
+import {distance, nearestPointOnLine, splitPath} from '../utils/Geometry'
 
 import './Map.css'
 
@@ -76,11 +76,7 @@ class Map extends React.Component {
         })
         points.push(target)
 
-        return _.flatten(_.compact(_.map(points, (point, index) => {
-            if (index < points.length - 1) {
-                return splitLine(point, points[index + 1], SPEED)
-            }
-        })))
+        return splitPath(points, SPEED)
     }
 
     simulate1() {
@@ -98,7 +94,7 @@ class Map extends React.Component {
             }
         }
 
-        const firstPoints = splitLine(this.props.courier, this.state.path1[this.state.path1.length - 1], SPEED)
+        const firstPoints = splitPath([this.props.courier, this.state.path1[this.state.path1.length - 1]], SPEED)
 
         const goToStart = () => {
             const newCourierPosition = firstPoints.shift()
@@ -154,9 +150,12 @@ class Map extends React.Component {
         const {src, restaurants, restaurantSelectedId, showOnlyRestaurantSelected, customer, courier, pathOptions} = this.props
         const {path1, path2, courierPosition} = this.state
 
-        const courierStyle = courierPosition || courier ?{
-            left: courierPosition !== null ? courierPosition[0] : courier[0],
-            top: courierPosition !== null ? courierPosition[1] : courier[1]
+        const courierStyle = (courierPosition || courier) ? {
+            transform: `translate(${courierPosition ? courierPosition[0] : courier[0]}px, ${courierPosition ? courierPosition[1] : courier[1]}px)`
+        } : null
+
+        const customerStyle = customer ? {
+            transform: `translate(${customer[0]}px, ${customer[1]}px)`
         } : null
 
         return (
@@ -177,8 +176,8 @@ class Map extends React.Component {
                     {path1 && <path d={this.getPathFromListOfPoints(path1)}/>}
                     {path2 && <path d={this.getPathFromListOfPoints(path2)} style={{strokeDasharray: pathOptions.path2dasharray ? 7 : 0}}/>}
                 </svg>
-                {customer && <div className="customer" style={{left: customer[0], top: customer[1]}}><i className="fas fa-user"/></div>}
-                {courier && <div className="courier" style={courierStyle}><i className="fas fa-car"/></div>}
+                {customer && <i className="customer fas fa-user" style={customerStyle}/>}
+                {courier && <i className="courier fas fa-car" style={courierStyle}/>}
             </div>
         )
     }

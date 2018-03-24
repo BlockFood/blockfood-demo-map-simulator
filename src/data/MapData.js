@@ -377,7 +377,7 @@ const MAP_DATA = {
         },
         '1': {
             name: 'Los Pollos Hermanos',
-            position: [855, 419],
+            position: [857, 418],
             labelDirection: 'bottom'
         },
         '2': {
