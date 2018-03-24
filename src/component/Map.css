@@ -6,7 +6,13 @@
     height: 100%;
 }
 
-.map .restaurant, .map .customer, .map .courier {
+.map .restaurant {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.map .restaurant i, .map .customer, .map .courier {
     position: absolute;
     top: 0;
     left: 0;
@@ -19,9 +25,10 @@
     line-height: 28px;
     border-radius: 100%;
     color: white;
+    opacity: 0.9;
 }
 
-.map .restaurant.selected:after {
+.map .restaurant.selected i:after {
     content: '';
     position: absolute;
     top: -4px;
@@ -33,8 +40,8 @@
 }
 
 .map .restaurant .name {
-    margin-top: 7px;
     position: absolute;
+    left: -14px;
     font-family: Poppins, sans-serif;
     background: black;
     font-weight: bold;
@@ -45,11 +52,15 @@
     height: 20px;
     line-height: 20px;
     opacity: 0.8;
+    color: white;
 }
 
 .map .restaurant.top .name {
-    bottom: 100%;
-    margin-bottom: 7px;
+    bottom: calc(100% + 20px);
+}
+
+.map .restaurant.bottom .name {
+    top: 20px;
 }
 
 .map svg > path {

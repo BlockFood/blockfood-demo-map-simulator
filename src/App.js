@@ -28,17 +28,6 @@ class App extends React.Component {
             simulate2: 0
         }
 
-        // this.state = {
-        //     step: 3,
-        //     customer: [50, 600],
-        //     tmpCustomerPoints: [],
-        //     restaurantSelectedId: '0',
-        //     courier: [520, 20],
-        //     tmpCourierPoints: [],
-        //     simulate1: 0,
-        //     simulate2: 0
-        // }
-
         this.canGoNext = this.canGoNext.bind(this)
         this.incrStep = this.incrStep.bind(this)
     }

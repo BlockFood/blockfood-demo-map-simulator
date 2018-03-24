@@ -12,8 +12,8 @@ class Map extends React.Component {
         super(props)
 
         this.state = {
-            path1: this.props.pathOptions.visible && this.props.courier ? this.computePath(this.props, this.props.courier) : null,
-            path2: this.props.pathOptions.visible && this.props.customer ? this.computePath(this.props, this.props.customer) : null,
+            path1: this.props.pathOptions.visible && this.props.courier ? this.computePath1() : null,
+            path2: this.props.pathOptions.visible && this.props.customer ? this.computePath2() : null,
             courierPosition: null
         }
     }
@@ -34,12 +34,25 @@ class Map extends React.Component {
 
         const additionPoint = _.minBy(projections, projection => projection.dist)
 
+        let perfectPoint = null
         const connections = {}
         _.forEach(additionPoint.id.split('_'), id => {
-            connections[id] = distance(additionPoint.position, roadNodes[id].position)
+            const dist = distance(additionPoint.position, roadNodes[id].position)
+            if (dist < 0.05) {
+                perfectPoint = {
+                    id,
+                    properties: {
+                        position: roadNodes[id].position,
+                        connections: {}
+                    }
+                }
+            }
+            else {
+                connections[id] = dist
+            }
         })
 
-        return {
+        return perfectPoint || {
             id: additionPoint.id,
             properties: {
                 position: additionPoint.position,
@@ -48,7 +61,7 @@ class Map extends React.Component {
         }
     }
 
-    computePath(props = this.props, target) {
+    computePath(props, target) {
         const {roadNodes, restaurants, restaurantSelectedId} = props
 
         const route = new Graph()
@@ -79,10 +92,24 @@ class Map extends React.Component {
         return splitPath(points, SPEED)
     }
 
+    computePath1(props = this.props) {
+        const {courier} = props
+
+        return _.reverse(this.computePath(props, courier))
+    }
+
+    computePath2(props = this.props) {
+        const {customer} = props
+
+        const points = this.computePath(props, customer)
+        while (distance(customer, points[points.length - 1]) < 14) points.pop()
+        return points
+    }
+
     simulate1() {
         const run = () => {
-            const newPath1 = this.state.path1.slice(0, this.state.path1.length - 1)
-            const newCourierPosition = newPath1.length > 0 ? newPath1[newPath1.length - 1]: this.state.courierPosition
+            const newPath1 = this.state.path1.slice(1)
+            const newCourierPosition = newPath1.length > 0 ? newPath1[0]: this.state.courierPosition
 
             this.setState({path1: newPath1, courierPosition: newCourierPosition})
 
@@ -94,7 +121,7 @@ class Map extends React.Component {
             }
         }
 
-        const firstPoints = splitPath([this.props.courier, this.state.path1[this.state.path1.length - 1]], SPEED)
+        const firstPoints = splitPath([this.props.courier, this.state.path1[0]], SPEED)
 
         const goToStart = () => {
             const newCourierPosition = firstPoints.shift()
@@ -114,7 +141,7 @@ class Map extends React.Component {
 
     simulate2() {
         const run = () => {
-            const newPath2 = this.state.path2.length === 10 ? [] : this.state.path2.slice(1)
+            const newPath2 = this.state.path2.slice(1)
             const newCourierPosition = newPath2.length > 0 ? newPath2[0]: this.state.courierPosition
 
             this.setState({path2: newPath2, courierPosition: newCourierPosition})
@@ -133,8 +160,8 @@ class Map extends React.Component {
 
         if (isPathFirstTimeVisible || isCourierPositionChanged) {
             this.setState({
-                path1: this.computePath(nextProps, nextProps.courier),
-                path2: this.computePath(nextProps, nextProps.customer),
+                path1: this.computePath1(nextProps),
+                path2: this.computePath2(nextProps),
             })
         }
 
