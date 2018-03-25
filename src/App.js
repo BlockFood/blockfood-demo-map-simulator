@@ -62,8 +62,8 @@ class App extends React.Component {
         this.setState({restaurantSelectedIndex})
     }
 
-    onCourierSet(customer) {
-        this.setState({customer})
+    onCourierSet(courier) {
+        this.setState({courier})
     }
 
     canGoNext() {

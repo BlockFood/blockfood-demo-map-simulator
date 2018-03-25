@@ -72,3 +72,18 @@
 .map .restaurant.top .name {
     margin-top: -45px;
 }
+
+.map svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.map svg > path {
+    fill: transparent;
+    stroke: black;
+    stroke-width: 6px;
+    stroke-opacity: 0.5;
+}

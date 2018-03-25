@@ -1,6 +1,7 @@
 import * as _ from 'lodash'
 import React from 'react'
 import ReactDOM from 'react-dom'
+import GraphDijkstra from 'node-dijkstra'
 import {distance, nearestPointOnLine, splitPath, getVector} from '../utils/Geometry'
 
 import './Map.css'
@@ -26,10 +27,18 @@ class Map extends React.Component {
             customerPositionBuffer: [],
             selectedRestaurantIndex: null,
             courierPosition: this.props.initialCourierPosition || null,
-            courierPositionBuffer: []
+            courierPositionBuffer: [],
+            path1: null,
+            path2: null
         }
 
         this.onClick = this.onClick.bind(this)
+    }
+
+    getPathFromListOfPoints(points) {
+        let path = ''
+        _.forEach(points, (point, index) => path += `${index === 0 ? 'M' : 'L'} ${point[0]} ${point[1]} `)
+        return path
     }
 
     getNearestPosition(target) {
@@ -93,8 +102,89 @@ class Map extends React.Component {
 
     adjustCourierPosition() {
         const getter = () => ({position: this.state.courierPosition, buffer: this.state.courierPositionBuffer})
-        const setter = (position, buffer) => this.setState({courierPosition: position, courierPositionBuffer: buffer})
+        const setter = (position, buffer) => {
+            const {path1, path2} = this.computePaths(this.state.customerPosition, position)
+            this.setState({courierPosition: position, courierPositionBuffer: buffer, path1, path2})
+        }
         this.adjustPosition(getter, setter)
+    }
+
+    getPathAdditionalPoint(target) {
+        const {graph, graphLines} = this.props
+
+        const projections = _.map(graphLines, ([line1, line2], id) => {
+            const {position, dist} = nearestPointOnLine(line1, line2, target)
+            return {id, position, dist}
+        })
+
+        const additionPoint = _.minBy(projections, projection => projection.dist)
+
+        let perfectPoint = null
+        const connections = {}
+        _.forEach(additionPoint.id.split('_'), id => {
+            const dist = distance(additionPoint.position, graph[id].position)
+
+            if (dist < 0.05) {
+                perfectPoint = {
+                    id,
+                    properties: {
+                        position: graph[id].position,
+                        connections: {}
+                    }
+                }
+            }
+            else {
+                connections[id] = dist
+            }
+        })
+
+        return perfectPoint || {
+            id: additionPoint.id,
+            properties: {
+                position: additionPoint.position,
+                connections
+            }
+        }
+    }
+
+    computePath(target) {
+        const {graph, restaurants: restaurant} = this.props
+
+        const route = new GraphDijkstra()
+
+        const additionalPoint = this.getPathAdditionalPoint(target)
+
+        _.forEach(graph, (node, nodeId) => {
+            const distanceToAdditionalPoint = additionalPoint.properties.connections[nodeId]
+
+            if (distanceToAdditionalPoint) {
+                const connections = _.assign({}, node.connections, {[additionalPoint.id]: distanceToAdditionalPoint})
+                route.addNode(nodeId, connections)
+            }
+            else {
+                route.addNode(nodeId, node.connections)
+            }
+        })
+
+        const from = _.minBy(_.keys(graph), nodeId => {
+            return distance(graph[nodeId].position, restaurant.position)
+        })
+
+        const points = _.map(route.path(from, additionalPoint.id), nodeId => {
+            return nodeId === additionalPoint.id ? additionalPoint.properties.position : graph[nodeId].position
+        })
+        points.push(target)
+
+        return splitPath(points, SPEED)
+    }
+
+    computePaths(customerPosition, courierPosition) {
+        const path1 = _.reverse(this.computePath(courierPosition))
+
+        const path2 = this.computePath(customerPosition)
+        while (distance(customerPosition, path2[path2.length - 1]) < 14) path2.pop()
+
+        return {path1, path2}
     }
 
     onClick(event) {
@@ -118,7 +208,8 @@ class Map extends React.Component {
         else if (step === STEPS.SET_COURIER_POSITION) {
             const courierPositionBuffer = this.getPositionBuffer(eventPoint)
             this.props.onCourierSet(courierPositionBuffer.length > 0 ? _.last(courierPositionBuffer) : eventPoint)
-            this.setState({courierPosition: eventPoint, courierPositionBuffer})
+            const {path1, path2} = this.computePaths(this.state.customerPosition, eventPoint)
+            this.setState({courierPosition: eventPoint, courierPositionBuffer, path1, path2})
         }
     }
 
@@ -142,7 +233,7 @@ class Map extends React.Component {
 
     render() {
         const {step, image, restaurants} = this.props
-        const {customerPosition, courierPosition} = this.state
+        const {customerPosition, courierPosition, path1, path2} = this.state
 
         const customerStyle = customerPosition ? {transform: `translate(${customerPosition[0]}px, ${customerPosition[1]}px)`} : null
         const courierStyle = courierPosition ? {transform: `translate(${courierPosition[0]}px, ${courierPosition[1]}px)`} : null
@@ -159,6 +250,10 @@ class Map extends React.Component {
                         <div className="name">{restaurant.name}</div>
                     </div>
                 ))}
+                <svg>
+                    {path1 && <path d={this.getPathFromListOfPoints(path1)}/>}
+                    {path2 && <path d={this.getPathFromListOfPoints(path2)} style={{strokeDasharray: step < STEPS.SIMULATE_COURIER_TO_CUSTOMER ? 7 : 0}}/>}
+                </svg>
                 {customerPosition && <div className="icon" style={customerStyle}><i className="fas fa-user"/></div>}
                 {courierPosition && <div className="icon" style={courierStyle}><i className="fas fa-car"/></div>}
             </div>
