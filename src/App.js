@@ -15,11 +15,13 @@ class App extends React.Component {
     constructor(props) {
         super(props)
 
+        // DEBUG STEP SET_CUSTOMER_POSITION
         this.state = {
             step: STEPS.SET_CUSTOMER_POSITION,
             frozen: false,
             customer: null,
-            restaurantSelectedIndex: null
+            restaurantSelectedIndex: null,
+            courier: null
         }
 
         // DEBUG STEP CHOOSE_RESTAURANT
@@ -28,10 +30,18 @@ class App extends React.Component {
         //     customer: [80, 480]
         // })
 
+        // DEBUG STEP SET_COURIER_POSITION
+        this.state = _.merge(this.state, {
+            step: STEPS.SET_COURIER_POSITION,
+            customer: [80, 480],
+            restaurantSelectedIndex: 1
+        })
+
         this.onActionStart = this.onActionStart.bind(this)
         this.onActionEnd = this.onActionEnd.bind(this)
         this.onCustomerSet = this.onCustomerSet.bind(this)
         this.onRestaurantSelected = this.onRestaurantSelected.bind(this)
+        this.onCourierSet = this.onCourierSet.bind(this)
         this.canGoNext = this.canGoNext.bind(this)
         this.goToNextStep = this.goToNextStep.bind(this)
     }
@@ -52,13 +62,17 @@ class App extends React.Component {
         this.setState({restaurantSelectedIndex})
     }
 
+    onCourierSet(customer) {
+        this.setState({customer})
+    }
+
     canGoNext() {
-        const {step, customer, restaurantSelectedIndex} = this.state
+        const {step, customer, restaurantSelectedIndex, courier} = this.state
 
         return !(
             (step === STEPS.SET_CUSTOMER_POSITION && !customer) ||
             (step === STEPS.CHOOSE_RESTAURANT && restaurantSelectedIndex === null) ||
-            step === STEPS.SET_COURIER_POSITION ||
+            (step === STEPS.SET_COURIER_POSITION && !courier) ||
             step === STEPS.SIMULATE_COURIER_TO_RESTAURANT ||
             step === STEPS.SIMULATE_COURIER_TO_CUSTOMER
         )
@@ -79,7 +93,7 @@ class App extends React.Component {
     }
 
     render() {
-        const {step, frozen, customer, restaurantSelectedIndex} = this.state
+        const {step, frozen, customer, restaurantSelectedIndex, courier} = this.state
 
         return (
             <div className="app">
@@ -88,9 +102,11 @@ class App extends React.Component {
                                       graph={ACTIVE_MAP.graph} graphLines={ACTIVE_MAP.graphLines}
                                       initialCustomerPosition={customer}
                                       restaurants={step > STEPS.CHOOSE_RESTAURANT ? ACTIVE_MAP.restaurants[restaurantSelectedIndex] : ACTIVE_MAP.restaurants}
+                                      initialCourierPosition={courier}
                                       onActionStart={this.onActionStart} onActionEnd={this.onActionEnd}
                                       onCustomerSet={this.onCustomerSet}
-                                      onRestaurantSelected={this.onRestaurantSelected}/>}
+                                      onRestaurantSelected={this.onRestaurantSelected}
+                                      onCourierSet={this.onCourierSet}/>}
                     {(BUILDER || SHOW_MAP) && <Builder showMapOnly={!BUILDER} mapData={ACTIVE_MAP}/>}
                 </div>
                 <div className="toolbar">
