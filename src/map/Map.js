@@ -2,7 +2,7 @@ import * as _ from 'lodash'
 import React from 'react'
 import ReactDOM from 'react-dom'
 import GraphDijkstra from 'node-dijkstra'
-import {distance, nearestPointOnLine, splitPath, getVector} from '../utils/Geometry'
+import {distance, nearestPointOnLine, splitPath, getVector} from './utils/Geometry'
 
 import './Map.css'
 
@@ -15,7 +15,8 @@ export const STEPS = {
 }
 
 const SPEED = 2
-const POSITION_MARGIN = 18
+const POSITION_MARGIN = 15
+const STOP_MARGIN = 18
 const MIN_RESTAURANT_DETECTION_RANGE = 150
 
 class Map extends React.Component {
@@ -23,6 +24,8 @@ class Map extends React.Component {
         super(props)
 
         this.simulationOngoing = false
+
+        this.graphLines = this.computeGraphLines(this.props.graph)
 
         const customerPosition = this.props.initialCustomerPosition || null
         const courierPosition = this.props.initialCourierPosition || null
@@ -48,6 +51,22 @@ class Map extends React.Component {
         this.onBtnSimulationClick = this.onBtnSimulationClick.bind(this)
     }
 
+    computeGraphLines(graph) {
+        const graphLines = {}
+        _.forEach(graph, (node, nodeId1) => {
+            _.forEach(_.keys(node.connections), nodeId2 => {
+                const min = Math.min(+nodeId1, +nodeId2)
+                const max = Math.max(+nodeId1, +nodeId2)
+                graphLines[min + '_' + max] = [
+                    graph[min].position,
+                    graph[max].position
+                ]
+            })
+        })
+
+        return graphLines
+    }
+
     getPathFromListOfPoints(points) {
         let path = ''
         _.forEach(points, (point, index) => path += `${index === 0 ? 'M' : 'L'} ${point[0]} ${point[1]} `)
@@ -55,9 +74,7 @@ class Map extends React.Component {
     }
 
     getNearestPosition(target) {
-        const {graphLines} = this.props
-
-        const projections = _.map(graphLines, ([line1, line2]) => nearestPointOnLine(line1, line2, target))
+        const projections = _.map(this.graphLines, ([line1, line2]) => nearestPointOnLine(line1, line2, target))
         return _.minBy(projections, projection => projection.dist).position
     }
 
@@ -122,10 +139,10 @@ class Map extends React.Component {
         this.adjustPosition(getter, setter)
     }
 
-    getPathAdditionalPoint(target) {
-        const {graph, graphLines} = this.props
+    getPathAdditionalPoint(target, idPrefix) {
+        const {graph} = this.props
 
-        const projections = _.map(graphLines, ([line1, line2], id) => {
+        const projections = _.map(this.graphLines, ([line1, line2], id) => {
             const {position, dist} = nearestPointOnLine(line1, line2, target)
             return {id, position, dist}
         })
@@ -138,13 +155,7 @@ class Map extends React.Component {
             const dist = distance(additionPoint.position, graph[id].position)
 
             if (dist < 0.05) {
-                perfectPoint = {
-                    id,
-                    properties: {
-                        position: graph[id].position,
-                        connections: {}
-                    }
-                }
+                perfectPoint = {id, alreadyInGraph: true}
             }
             else {
                 connections[id] = dist
@@ -152,50 +163,68 @@ class Map extends React.Component {
         })
 
         return perfectPoint || {
-            id: additionPoint.id,
-            properties: {
-                position: additionPoint.position,
-                connections
-            }
+            id: idPrefix + additionPoint.id,
+            alreadyInGraph: false,
+            line: additionPoint.id,
+            position: additionPoint.position,
+            connections
         }
     }
 
-    computePath(target) {
-        const {graph, restaurants: restaurant} = this.props
+    computePath(from, target) {
+        const {graph} = this.props
 
         const route = new GraphDijkstra()
 
-        const additionalPoint = this.getPathAdditionalPoint(target)
+        const fromPoint = this.getPathAdditionalPoint(from, 'from_')
+        const targetPoint = this.getPathAdditionalPoint(target, 'target_')
+
+        if (!fromPoint.alreadyInGraph && !targetPoint.alreadyInGraph && fromPoint.line === targetPoint.line) {
+            const dist = distance(fromPoint.position, targetPoint.position)
+            fromPoint.connections[targetPoint.id] = dist
+            targetPoint.connections[fromPoint.id] = dist
+        }
 
         _.forEach(graph, (node, nodeId) => {
-            const distanceToAdditionalPoint = additionalPoint.properties.connections[nodeId]
+            const distanceToFromPoint = !fromPoint.alreadyInGraph ? fromPoint.connections[nodeId] : null
+            const distanceToTargetPoint = !targetPoint.alreadyInGraph ? targetPoint.connections[nodeId] : null
 
-            if (distanceToAdditionalPoint) {
-                const connections = _.assign({}, node.connections, {[additionalPoint.id]: distanceToAdditionalPoint})
-                route.addNode(nodeId, connections)
+            const connections = _.assign({}, node.connections)
+
+            if (distanceToFromPoint) {
+                _.assign(connections, {[fromPoint.id]: distanceToFromPoint})
             }
-            else {
-                route.addNode(nodeId, node.connections)
+
+            if (distanceToTargetPoint) {
+                _.assign(connections, {[targetPoint.id]: distanceToTargetPoint})
             }
+
+            route.addNode(nodeId, connections)
         })
 
-        const from = _.minBy(_.keys(graph), nodeId => {
-            return distance(graph[nodeId].position, restaurant.position)
-        })
+        !fromPoint.alreadyInGraph && route.addNode(fromPoint.id, fromPoint.connections)
+        !targetPoint.alreadyInGraph && route.addNode(targetPoint.id, targetPoint.connections)
 
-        const points = _.map(route.path(from, additionalPoint.id), nodeId => {
-            return nodeId === additionalPoint.id ? additionalPoint.properties.position : graph[nodeId].position
+        const points = _.map(route.path(fromPoint.id, targetPoint.id), nodeId => {
+            return {
+                [targetPoint.id]: targetPoint.position,
+                [fromPoint.id]: fromPoint.position
+            }[nodeId] || graph[nodeId].position
         })
+        points.unshift(from)
         points.push(target)
 
         return splitPath(points, SPEED)
     }
 
     computePaths(customerPosition, courierPosition) {
-        const path1 = _.reverse(this.computePath(courierPosition))
+        const {graph, restaurants: restaurant} = this.props
 
-        const path2 = this.computePath(customerPosition)
-        while (distance(customerPosition, path2[path2.length - 1]) < 14) path2.pop()
+        const restaurantPoint = this.getPathAdditionalPoint(restaurant.position)
+        const restaurantPosition = !restaurantPoint.alreadyInGraph ? restaurantPoint.position : graph[restaurantPoint.id].position
+
+        const path1 = this.computePath(courierPosition, restaurantPosition)
+        const path2 = this.computePath(restaurantPosition, customerPosition)
 
         return {path1, path2}
     }
@@ -226,10 +255,13 @@ class Map extends React.Component {
 
     simulate2() {
         const run = () => {
-            const {courierPosition, path2} = this.state
+            const {customerPosition, courierPosition, path2} = this.state
 
-            const newPath2 = path2.slice(1)
-            const newCourierPosition = newPath2.length > 0 ? newPath2[0]: courierPosition
+            let newPath2 = path2.slice(1)
+            if (newPath2.length > 0 && distance(newPath2[0], customerPosition) < STOP_MARGIN) {
+                newPath2 = []
+            }
+            const newCourierPosition = newPath2.length > 0 ? newPath2[0] : courierPosition
 
             this.setState({path2: newPath2, courierPosition: newCourierPosition})
 

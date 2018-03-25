@@ -1,7 +1,7 @@
 import * as _ from 'lodash'
 import React from 'react'
 import ReactDOM from "react-dom";
-import {distance} from '../utils/Geometry'
+import {distance} from '../map/utils/Geometry'
 
 import './Builder.css'
 
@@ -15,22 +15,6 @@ class Builder extends React.Component {
             graph: this.props.mapData.graph,
             selectedNodeId: null
         }
-    }
-
-    computeGraphLines(graph) {
-        const graphLines = {}
-        _.forEach(graph, (node, nodeId1) => {
-            _.forEach(_.keys(node.connections), nodeId2 => {
-                const min = Math.min(+nodeId1, +nodeId2)
-                const max = Math.max(+nodeId1, +nodeId2)
-                graphLines[min + '_' + max] = [
-                    graph[min].position,
-                    graph[max].position
-                ]
-            })
-        })
-
-        return graphLines
     }
 
     getNodeIdFromEventPoint(eventPoint) {
@@ -107,7 +91,6 @@ class Builder extends React.Component {
     componentDidUpdate(_prevProps, prevState) {
         if (this.state.graph !== prevState.graph) {
             window.graph = JSON.stringify(this.state.graph)
-            window.graphLines = JSON.stringify(this.computeGraphLines(this.state.graph))
         }
     }
 

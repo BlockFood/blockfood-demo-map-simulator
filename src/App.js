@@ -140,7 +140,7 @@ class App extends React.Component {
             <div className="app">
                 <div className="wrapper" style={ACTIVE_MAP.dimensions}>
                     {!BUILDER && <Map key={this.key} step={step} image={ACTIVE_MAP.image}
-                                      graph={ACTIVE_MAP.graph} graphLines={ACTIVE_MAP.graphLines}
+                                      graph={ACTIVE_MAP.graph}
                                       initialCustomerPosition={customer}
                                       restaurants={step > STEPS.CHOOSE_RESTAURANT ? ACTIVE_MAP.restaurants[restaurantSelectedIndex] : ACTIVE_MAP.restaurants}
                                       initialCourierPosition={courier}

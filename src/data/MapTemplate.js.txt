@@ -7,6 +7,5 @@ export default {
         height: <image_height>
     },
     graph: {},
-    graphLines: {},
     restaurants: []
 }
