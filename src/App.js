@@ -18,7 +18,8 @@ class App extends React.Component {
         this.state = {
             step: STEPS.SET_CUSTOMER_POSITION,
             frozen: false,
-            customer: null
+            customer: null,
+            restaurantSelectedIndex: null
         }
 
         // DEBUG STEP CHOOSE_RESTAURANT
@@ -30,6 +31,7 @@ class App extends React.Component {
         this.onActionStart = this.onActionStart.bind(this)
         this.onActionEnd = this.onActionEnd.bind(this)
         this.onCustomerSet = this.onCustomerSet.bind(this)
+        this.onRestaurantSelected = this.onRestaurantSelected.bind(this)
         this.canGoNext = this.canGoNext.bind(this)
         this.goToNextStep = this.goToNextStep.bind(this)
     }
@@ -46,12 +48,16 @@ class App extends React.Component {
         this.setState({customer})
     }
 
+    onRestaurantSelected(restaurantSelectedIndex) {
+        this.setState({restaurantSelectedIndex})
+    }
+
     canGoNext() {
-        const {step, customer} = this.state
+        const {step, customer, restaurantSelectedIndex} = this.state
 
         return !(
             (step === STEPS.SET_CUSTOMER_POSITION && !customer) ||
-            step === STEPS.CHOOSE_RESTAURANT ||
+            (step === STEPS.CHOOSE_RESTAURANT && restaurantSelectedIndex === null) ||
             step === STEPS.SET_COURIER_POSITION ||
             step === STEPS.SIMULATE_COURIER_TO_RESTAURANT ||
             step === STEPS.SIMULATE_COURIER_TO_CUSTOMER
@@ -68,8 +74,12 @@ class App extends React.Component {
         }
     }
 
+    componentDidMount() {
+        !BUILDER && window.addEventListener('keydown', (event) => event.keyCode === 13 && this.goToNextStep(), false)
+    }
+
     render() {
-        const {step, frozen, customer} = this.state
+        const {step, frozen, customer, restaurantSelectedIndex} = this.state
 
         return (
             <div className="app">
@@ -77,8 +87,10 @@ class App extends React.Component {
                     {!BUILDER && <Map step={step} image={ACTIVE_MAP.image}
                                       graph={ACTIVE_MAP.graph} graphLines={ACTIVE_MAP.graphLines}
                                       initialCustomerPosition={customer}
+                                      restaurants={step > STEPS.CHOOSE_RESTAURANT ? ACTIVE_MAP.restaurants[restaurantSelectedIndex] : ACTIVE_MAP.restaurants}
                                       onActionStart={this.onActionStart} onActionEnd={this.onActionEnd}
-                                      onCustomerSet={this.onCustomerSet}/>}
+                                      onCustomerSet={this.onCustomerSet}
+                                      onRestaurantSelected={this.onRestaurantSelected}/>}
                     {(BUILDER || SHOW_MAP) && <Builder showMapOnly={!BUILDER} mapData={ACTIVE_MAP}/>}
                 </div>
                 <div className="toolbar">

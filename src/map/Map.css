@@ -7,13 +7,14 @@
     border: 2px solid black;
     overflow: hidden;
     box-sizing: border-box;
+    cursor: pointer;
 }
 
 .map * {
     user-select: none;
 }
 
-.map > i, .map > svg {
+.map > * {
     pointer-events: none;
 }
 
@@ -37,4 +38,37 @@
     color: white;
     border-radius: 100%;
     padding: 7px;
+}
+
+.map .restaurant {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.map .restaurant.not-selected {
+    opacity: 0.5;
+}
+
+.map .restaurant .name {
+    position: absolute;
+    top: 0;
+    left: 0;
+    font-family: Poppins, sans-serif;
+    background: black;
+    font-weight: bold;
+    padding: 2px 10px;
+    border-radius: 5px;
+    white-space: nowrap;
+    font-size: 0.8em;
+    height: 20px;
+    line-height: 20px;
+    opacity: 0.8;
+    color: white;
+    margin-left: -14px;
+    margin-top: 20px;
+}
+
+.map .restaurant.top .name {
+    margin-top: -45px;
 }

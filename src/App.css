@@ -9,11 +9,11 @@
     justify-content: center;
 }
 
-.wrapper {
+.app .wrapper {
     position: relative;
 }
 
-.toolbar {
+.app .toolbar {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -21,7 +21,7 @@
     margin-left: 75px;
 }
 
-.toolbar .step {
+.app .toolbar .step {
     position: relative;
     width: 100px;
     height: 100px;
@@ -36,11 +36,11 @@
     transition: opacity 0.3s;
 }
 
-.toolbar .step:not(:last-of-type) {
+.app .toolbar .step:not(:last-of-type) {
     margin-bottom: 35px;
 }
 
-.toolbar .step:not(:last-of-type):after {
+.app .toolbar .step:not(:last-of-type):after {
     content: '';
     position: absolute;
     top: 100%;
@@ -50,16 +50,16 @@
     background: #b9b9b9;
 }
 
-.toolbar .step:not(.active) {
+.app .toolbar .step:not(.active) {
     opacity: 0.4;
 }
 
-.toolbar .step > i {
+.app .toolbar .step > i {
     font-size: 1.5em;
     margin-bottom: 10px;
 }
 
-.toolbar .step > span {
+.app .toolbar .step > span {
     width: 80px;
     font-size: 0.7em;
     line-height: 1em;
@@ -67,7 +67,7 @@
     font-weight: bold;
 }
 
-.toolbar .btn {
+.app .toolbar .btn {
     margin-top: 50px;
     font-family: Poppins, sans-serif;
     font-weight: bold;
@@ -78,13 +78,13 @@
     user-select: none;
 }
 
-.toolbar .btn:not(.disabled):hover {
+.app .toolbar .btn:not(.disabled):hover {
     cursor: pointer;
     background: black;
     color: white;
 }
 
-.toolbar .btn.disabled {
+.app .toolbar .btn.disabled {
     opacity: 0.5;
     cursor: not-allowed;
 }

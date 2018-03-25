@@ -15,6 +15,7 @@ export const STEPS = {
 
 const SPEED = 2
 const POSITION_MARGIN = 18
+const MIN_RESTAURANT_DETECTION_RANGE = 150
 
 class Map extends React.Component {
     constructor(props) {
@@ -22,7 +23,8 @@ class Map extends React.Component {
 
         this.state = {
             customerPosition: this.props.initialCustomerPosition || null,
-            customerPositionBuffer: []
+            customerPositionBuffer: [],
+            selectedRestaurantIndex: null
         }
 
         this.onClick = this.onClick.bind(this)
@@ -33,6 +35,16 @@ class Map extends React.Component {
 
         const projections = _.map(graphLines, ([line1, line2]) => nearestPointOnLine(line1, line2, target))
         return _.minBy(projections, projection => projection.dist).position
+    }
+
+    getNearRestaurantIndex(eventPoint) {
+        const {restaurants} = this.props
+
+        const nearRestaurantIndex = _.minBy(_.range(restaurants.length), index => {
+            return distance(restaurants[index].position, eventPoint)
+        })
+
+        return distance(restaurants[nearRestaurantIndex].position, eventPoint) < MIN_RESTAURANT_DETECTION_RANGE ? nearRestaurantIndex : null
     }
 
     adjustCustomerPosition() {
@@ -59,9 +71,11 @@ class Map extends React.Component {
     }
 
     onClick(event) {
+        const {step} = this.props
+
         const eventPoint = [event.offsetX, event.offsetY]
 
-        if (this.props.step === STEPS.SET_CUSTOMER_POSITION) {
+        if (step === STEPS.SET_CUSTOMER_POSITION) {
             const nearestEventPoint = this.getNearestPosition(eventPoint)
 
             let customerPositionBuffer = []
@@ -73,6 +87,14 @@ class Map extends React.Component {
 
             this.props.onCustomerSet(customerPositionBuffer.length > 0 ? _.last(customerPositionBuffer) : eventPoint)
             this.setState({customerPosition: eventPoint, customerPositionBuffer})
+        }
+        else if (step === STEPS.CHOOSE_RESTAURANT) {
+            const nearRestaurantIndex = this.getNearRestaurantIndex(eventPoint)
+
+            if (nearRestaurantIndex !== null) {
+                this.props.onRestaurantSelected(nearRestaurantIndex)
+                this.setState({selectedRestaurantIndex: nearRestaurantIndex})
+            }
         }
     }
 
@@ -92,14 +114,23 @@ class Map extends React.Component {
     }
 
     render() {
-        const {image} = this.props
+        const {step, image, restaurants} = this.props
         const {customerPosition} = this.state
 
         const customerStyle = customerPosition ? {transform: `translate(${customerPosition[0]}px, ${customerPosition[1]}px)`} : null
 
+        const selectedRestaurantIndex = step === STEPS.CHOOSE_RESTAURANT ? this.state.selectedRestaurantIndex : null
+
         return (
             <div className="map">
                 <img src={image} alt="" draggable="false"/>
+                {_.map(_.isArray(restaurants) ? restaurants : [restaurants], (restaurant, index) => (
+                    <div key={index} className={`restaurant ${restaurant.labelDirection}${selectedRestaurantIndex !== null && selectedRestaurantIndex !== index ? ' not-selected' : ''}`}
+                         style={{transform: `translate(${restaurant.position[0]}px, ${restaurant.position[1]}px)`}}>
+                        <div className="icon"><i className="fas fa-utensils"/></div>
+                        <div className="name">{restaurant.name}</div>
+                    </div>
+                ))}
                 {customerPosition && <div className="icon" style={customerStyle}><i className="fas fa-user"/></div>}
             </div>
         )
