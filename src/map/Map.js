@@ -22,14 +22,26 @@ class Map extends React.Component {
     constructor(props) {
         super(props)
 
+        this.simulationOngoing = false
+
+        const customerPosition = this.props.initialCustomerPosition || null
+        const courierPosition = this.props.initialCourierPosition || null
+
+        let path1 = null, path2 = null
+        if (customerPosition && courierPosition) {
+            const paths = this.computePaths(customerPosition, courierPosition)
+            path1 = paths.path1
+            path2 = paths.path2
+        }
+
         this.state = {
-            customerPosition: this.props.initialCustomerPosition || null,
+            customerPosition,
             customerPositionBuffer: [],
             selectedRestaurantIndex: null,
-            courierPosition: this.props.initialCourierPosition || null,
+            courierPosition,
             courierPositionBuffer: [],
-            path1: null,
-            path2: null
+            path1,
+            path2
         }
 
         this.onClick = this.onClick.bind(this)
@@ -187,6 +199,54 @@ class Map extends React.Component {
         return {path1, path2}
     }
 
+    simulate1() {
+        const run = () => {
+            const {courierPosition, path1} = this.state
+
+            const newPath1 = path1.slice(1)
+            const newCourierPosition = newPath1.length > 0 ? newPath1[0]: courierPosition
+
+            this.setState({path1: newPath1, courierPosition: newCourierPosition})
+
+            if (newPath1.length > 0) {
+                requestAnimationFrame(run)
+            }
+            else {
+                this.simulationOngoing = false
+                this.props.onPickingDone()
+                this.props.onActionEnd()
+            }
+        }
+
+        this.simulationOngoing = true
+        this.props.onActionStart()
+        run()
+    }
+
+    simulate2() {
+        const run = () => {
+            const {courierPosition, path2} = this.state
+
+            const newPath2 = path2.slice(1)
+            const newCourierPosition = newPath2.length > 0 ? newPath2[0]: courierPosition
+
+            this.setState({path2: newPath2, courierPosition: newCourierPosition})
+
+            if (newPath2.length > 0) {
+                requestAnimationFrame(run)
+            }
+            else {
+                this.simulationOngoing = false
+                this.props.onDeliveryDone()
+                this.props.onActionEnd()
+            }
+        }
+
+        this.simulationOngoing = true
+        this.props.onActionStart()
+        run()
+    }
+
     onClick(event) {
         const {step} = this.props
 
@@ -210,6 +270,12 @@ class Map extends React.Component {
             this.props.onCourierSet(courierPositionBuffer.length > 0 ? _.last(courierPositionBuffer) : eventPoint)
             const {path1, path2} = this.computePaths(this.state.customerPosition, eventPoint)
             this.setState({courierPosition: eventPoint, courierPositionBuffer, path1, path2})
+        }
+        else if (step === STEPS.SIMULATE_COURIER_TO_RESTAURANT && !this.simulationOngoing) {
+            this.simulate1()
+        }
+        else if (step === STEPS.SIMULATE_COURIER_TO_CUSTOMER && !this.simulationOngoing) {
+            this.simulate2()
         }
     }
 

@@ -76,6 +76,8 @@
     padding: 5px 10px;
     font-size: 1.5em;
     user-select: none;
+    width: 100px;
+    text-align: center;
 }
 
 .app .toolbar .btn:not(.disabled):hover {
