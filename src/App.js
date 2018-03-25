@@ -42,13 +42,13 @@ class App extends React.Component {
         // })
 
         // DEBUG STEP SIMULATE_COURIER_TO_CUSTOMER
-        this.state = _.merge(this.state, {
-            step: STEPS.SIMULATE_COURIER_TO_CUSTOMER,
-            customer: [80, 480],
-            restaurantSelectedIndex: 1,
-            courier: [839, 400],
-            pickingDone: true
-        })
+        // this.state = _.merge(this.state, {
+        //     step: STEPS.SIMULATE_COURIER_TO_CUSTOMER,
+        //     customer: [80, 480],
+        //     restaurantSelectedIndex: 1,
+        //     courier: [839, 400],
+        //     pickingDone: true
+        // })
 
         this.onActionStart = this.onActionStart.bind(this)
         this.onActionEnd = this.onActionEnd.bind(this)

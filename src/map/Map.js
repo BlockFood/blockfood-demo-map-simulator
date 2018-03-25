@@ -45,6 +45,7 @@ class Map extends React.Component {
         }
 
         this.onClick = this.onClick.bind(this)
+        this.onBtnSimulationClick = this.onBtnSimulationClick.bind(this)
     }
 
     getPathFromListOfPoints(points) {
@@ -208,10 +209,10 @@ class Map extends React.Component {
 
             this.setState({path1: newPath1, courierPosition: newCourierPosition})
 
-            if (newPath1.length > 0) {
+            if (newPath1.length > 0 && this.simulationOngoing) {
                 requestAnimationFrame(run)
             }
-            else {
+            else if (newPath1.length === 0) {
                 this.simulationOngoing = false
                 this.props.onPickingDone()
                 this.props.onActionEnd()
@@ -232,10 +233,10 @@ class Map extends React.Component {
 
             this.setState({path2: newPath2, courierPosition: newCourierPosition})
 
-            if (newPath2.length > 0) {
+            if (newPath2.length > 0 && this.simulationOngoing) {
                 requestAnimationFrame(run)
             }
-            else {
+            else if (newPath2.length === 0) {
                 this.simulationOngoing = false
                 this.props.onDeliveryDone()
                 this.props.onActionEnd()
@@ -271,11 +272,19 @@ class Map extends React.Component {
             const {path1, path2} = this.computePaths(this.state.customerPosition, eventPoint)
             this.setState({courierPosition: eventPoint, courierPositionBuffer, path1, path2})
         }
-        else if (step === STEPS.SIMULATE_COURIER_TO_RESTAURANT && !this.simulationOngoing) {
+    }
+
+    onBtnSimulationClick() {
+        const {step} = this.props
+
+        if (step === STEPS.SIMULATE_COURIER_TO_RESTAURANT && !this.simulationOngoing) {
             this.simulate1()
         }
         else if (step === STEPS.SIMULATE_COURIER_TO_CUSTOMER && !this.simulationOngoing) {
             this.simulate2()
+        }
+        else if (this.simulationOngoing) {
+            this.simulationOngoing = false
         }
     }
 
@@ -306,6 +315,8 @@ class Map extends React.Component {
 
         const selectedRestaurantIndex = step === STEPS.CHOOSE_RESTAURANT ? this.state.selectedRestaurantIndex : null
 
+        const showBtnSimulation = (step === STEPS.SIMULATE_COURIER_TO_RESTAURANT && path1.length > 0) || (step === STEPS.SIMULATE_COURIER_TO_CUSTOMER && path2.length > 0)
+
         return (
             <div className="map">
                 <img src={image} alt="" draggable="false"/>
@@ -322,6 +333,9 @@ class Map extends React.Component {
                 </svg>
                 {customerPosition && <div className="icon" style={customerStyle}><i className="fas fa-user"/></div>}
                 {courierPosition && <div className="icon" style={courierStyle}><i className="fas fa-car"/></div>}
+                {showBtnSimulation && (
+                    <i className={`btn-simulation far fa-${!this.simulationOngoing ? 'play' : 'pause'}-circle`} onClick={this.onBtnSimulationClick}/>
+                )}
             </div>
         )
     }
