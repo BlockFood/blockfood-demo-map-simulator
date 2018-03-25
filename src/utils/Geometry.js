@@ -13,7 +13,20 @@ export const nearestPointOnLine = (p1, p2, p3) => {
     return {position, dist: distance(position, p3)}
 }
 
-export const splitPath = (points, speed) => {
+export const getVector = (p1, p2) => {
+    const dist = distance(p1, p2)
+    const vector = []
+    if(Math.abs(dist) < 1e-9) {
+        vector[0] = 0
+        vector[1] = 0
+    } else {
+        vector[0] = (p2[0] - p1[0]) / dist
+        vector[1] = (p2[1] - p1[1]) / dist
+    }
+    return vector
+}
+
+export const splitPath = (points, speed = 1) => {
     const getVector = (p1, p2) => {
         const dist = distance(p1, p2)
         const vector = []

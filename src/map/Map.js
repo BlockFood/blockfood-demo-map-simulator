@@ -1,7 +1,7 @@
 import * as _ from 'lodash'
 import React from 'react'
 import ReactDOM from 'react-dom'
-import {distance, nearestPointOnLine, splitPath} from '../utils/Geometry'
+import {distance, nearestPointOnLine, splitPath, getVector} from '../utils/Geometry'
 
 import './Map.css'
 
@@ -14,8 +14,7 @@ export const STEPS = {
 }
 
 const SPEED = 2
-const ADJUST_SPEED = 1
-const ADJUST_MARGIN = 40 / SPEED
+const POSITION_MARGIN = 18
 
 class Map extends React.Component {
     constructor(props) {
@@ -66,9 +65,10 @@ class Map extends React.Component {
             const nearestEventPoint = this.getNearestPosition(eventPoint)
 
             let customerPositionBuffer = []
-            if (distance(eventPoint, nearestEventPoint) > ADJUST_SPEED * ADJUST_MARGIN) {
-                customerPositionBuffer = splitPath([eventPoint, nearestEventPoint], ADJUST_SPEED)
-                customerPositionBuffer = _.take(customerPositionBuffer, customerPositionBuffer.length - ADJUST_MARGIN)
+            if (distance(eventPoint, nearestEventPoint) > POSITION_MARGIN) {
+                const vector = getVector(nearestEventPoint, eventPoint)
+                const nearestEventPointWithMargin = [nearestEventPoint[0] + POSITION_MARGIN * vector[0], nearestEventPoint[1] + POSITION_MARGIN * vector[1]]
+                customerPositionBuffer = splitPath([eventPoint, nearestEventPointWithMargin])
             }
 
             this.props.onCustomerSet(customerPositionBuffer.length > 0 ? _.last(customerPositionBuffer) : eventPoint)
