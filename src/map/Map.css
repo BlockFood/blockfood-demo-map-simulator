@@ -6,4 +6,35 @@
     height: 100%;
     border: 2px solid black;
     overflow: hidden;
+    box-sizing: border-box;
+}
+
+.map * {
+    user-select: none;
+}
+
+.map > i, .map > svg {
+    pointer-events: none;
+}
+
+.map .icon {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 30px;
+    height: 30px;
+    margin-top: -15px;
+    margin-left: -15px;
+    opacity: 0.9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.map .icon i {
+    font-size: 15px;
+    background: black;
+    color: white;
+    border-radius: 100%;
+    padding: 7px;
 }

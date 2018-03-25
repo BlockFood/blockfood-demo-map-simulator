@@ -11,6 +11,6 @@
 	labelDirection: 'top' | 'bottom'
 }
 ```
-3) Set **BUILDER = true** in **App.js**.
+3) Import **Map\<Id>.js** in **App.js**, set **ACTIVE_MAP = Map\<Id>** and set **BUILDER = true**.
 4) Use the onclick event (*normal = add node, altKey = delete node, ctrlKey = select node, shiftKey = add connections*) to draw a graph.
 5) In the debug console (F12), print and copy the value of window.graph and window.graphLines. Add these values in the  **Map\<Id>.js** file.

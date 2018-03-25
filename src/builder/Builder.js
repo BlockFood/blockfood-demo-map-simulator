@@ -59,7 +59,7 @@ class Builder extends React.Component {
 
             if (nearestNodeId && selectedNodeId) {
                 const dist = distance(graph[selectedNodeId].position, graph[nearestNodeId].position)
-                const newGraph = _.assign(newGraph, graph)
+                const newGraph = _.assign({}, graph)
                 newGraph[selectedNodeId].connections[nearestNodeId] = dist
                 newGraph[nearestNodeId].connections[selectedNodeId] = dist
 
@@ -104,8 +104,8 @@ class Builder extends React.Component {
         }
     }
 
-    componentDidUpdate(newState) {
-        if (newState.graph !== this.state.graph) {
+    componentDidUpdate(_prevProps, prevState) {
+        if (this.state.graph !== prevState.graph) {
             window.graph = JSON.stringify(this.state.graph)
             window.graphLines = JSON.stringify(this.computeGraphLines(this.state.graph))
         }
@@ -116,7 +116,7 @@ class Builder extends React.Component {
         const {graph, selectedNodeId} = this.state
 
         return (
-            <div className="map map-builder">
+            <div className="map-builder">
                 {!showMapOnly && <img src={mapData.image} alt="" draggable="false"/>}
                 <svg>
                     {_.map(_.keys(graph), nodeId => (
