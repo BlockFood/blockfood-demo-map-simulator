@@ -3,6 +3,7 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import GraphDijkstra from 'node-dijkstra'
 import {distance, nearestPointOnLine, splitPath, getVector} from './utils/Geometry'
+import Success from './success/Success'
 
 import './Map.css'
 
@@ -44,7 +45,9 @@ class Map extends React.Component {
             courierPosition,
             courierPositionBuffer: [],
             path1,
-            path2
+            success1: null,
+            path2,
+            success2: null
         }
 
         this.onClick = this.onClick.bind(this)
@@ -231,6 +234,7 @@ class Map extends React.Component {
 
     simulate1() {
         const run = () => {
+            const {restaurants: restaurant} = this.props
             const {courierPosition, path1} = this.state
 
             const newPath1 = path1.slice(1)
@@ -245,6 +249,8 @@ class Map extends React.Component {
                 this.simulationOngoing = false
                 this.props.onPickingDone()
                 this.props.onActionEnd()
+                const success1 = [(restaurant.position[0] + newCourierPosition[0]) / 2, (restaurant.position[1] + newCourierPosition[1]) / 2]
+                this.setState({success1})
             }
         }
 
@@ -272,6 +278,8 @@ class Map extends React.Component {
                 this.simulationOngoing = false
                 this.props.onDeliveryDone()
                 this.props.onActionEnd()
+                const success2 = [(customerPosition[0] + newCourierPosition[0]) / 2, (customerPosition[1] + newCourierPosition[1]) / 2]
+                this.setState({success2})
             }
         }
 
@@ -340,7 +348,7 @@ class Map extends React.Component {
 
     render() {
         const {step, image, restaurants} = this.props
-        const {customerPosition, courierPosition, path1, path2} = this.state
+        const {customerPosition, courierPosition, path1, success1, path2, success2} = this.state
 
         const customerStyle = customerPosition ? {transform: `translate(${customerPosition[0]}px, ${customerPosition[1]}px)`} : null
         const courierStyle = courierPosition ? {transform: `translate(${courierPosition[0]}px, ${courierPosition[1]}px)`} : null
@@ -368,6 +376,8 @@ class Map extends React.Component {
                 {showBtnSimulation && (
                     <i className={`btn-simulation far fa-${!this.simulationOngoing ? 'play' : 'pause'}-circle`} onClick={this.onBtnSimulationClick}/>
                 )}
+                {success1 && <Success x={success1[0]} y={success1[1]}/>}
+                {success2 && <Success x={success2[0]} y={success2[1]}/>}
             </div>
         )
     }
