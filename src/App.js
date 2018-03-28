@@ -7,11 +7,12 @@ import './App.css'
 
 import Map1 from './data/Map1'
 import Map2 from './data/Map2'
+import Map3 from './data/Map3'
 
-const MAPS = [Map1, Map2]
+const MAPS = [Map1, Map2, Map3]
 
 const BUILDER = false
-const DEFAULT_MAP_INDEX = 1
+const DEFAULT_MAP_INDEX = 0
 const SHOW_MAP = false
 
 class App extends React.Component {
