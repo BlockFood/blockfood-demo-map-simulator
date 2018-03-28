@@ -350,9 +350,6 @@ class Map extends React.Component {
         const {step, image, restaurants} = this.props
         const {customerPosition, courierPosition, path1, success1, path2, success2} = this.state
 
-        const customerStyle = customerPosition ? {transform: `translate(${customerPosition[0]}px, ${customerPosition[1]}px)`} : null
-        const courierStyle = courierPosition ? {transform: `translate(${courierPosition[0]}px, ${courierPosition[1]}px)`} : null
-
         const selectedRestaurantIndex = step === STEPS.CHOOSE_RESTAURANT ? this.state.selectedRestaurantIndex : null
 
         const showBtnSimulation = (step === STEPS.SIMULATE_COURIER_TO_RESTAURANT && path1.length > 0) || (step === STEPS.SIMULATE_COURIER_TO_CUSTOMER && path2.length > 0)
@@ -370,9 +367,19 @@ class Map extends React.Component {
                 <svg>
                     {path1 && <path d={this.getPathFromListOfPoints(path1)}/>}
                     {path2 && <path d={this.getPathFromListOfPoints(path2)} style={{strokeDasharray: step < STEPS.SIMULATE_COURIER_TO_CUSTOMER ? 7 : 0}}/>}
+                    {customerPosition && (
+                        <g transform={`translate(${customerPosition[0]}, ${customerPosition[1]})`}>
+                            <circle cx="0" cy="0" r="15"/>
+                            <path fill="white" transform="translate(-8, -8) scale(0.03125)" d="M256 0c88.366 0 160 71.634 160 160s-71.634 160-160 160S96 248.366 96 160 167.634 0 256 0zm183.283 333.821l-71.313-17.828c-74.923 53.89-165.738 41.864-223.94 0l-71.313 17.828C29.981 344.505 0 382.903 0 426.955V464c0 26.51 21.49 48 48 48h416c26.51 0 48-21.49 48-48v-37.045c0-44.052-29.981-82.45-72.717-93.134z"/>
+                        </g>
+                    )}
+                    {courierPosition && (
+                        <g transform={`translate(${courierPosition[0]}, ${courierPosition[1]})`}>
+                            <circle cx="0" cy="0" r="15"/>
+                            <path transform="translate(-10, -10) scale(0.0390625)" d="M499.991 168h-54.815l-7.854-20.944c-9.192-24.513-25.425-45.351-46.942-60.263S343.651 64 317.472 64H194.528c-26.18 0-51.391 7.882-72.908 22.793-21.518 14.912-37.75 35.75-46.942 60.263L66.824 168H12.009c-8.191 0-13.974 8.024-11.384 15.795l8 24A12 12 0 0 0 20.009 216h28.815l-.052.14C29.222 227.093 16 247.997 16 272v48c0 16.225 6.049 31.029 16 42.309V424c0 13.255 10.745 24 24 24h48c13.255 0 24-10.745 24-24v-40h256v40c0 13.255 10.745 24 24 24h48c13.255 0 24-10.745 24-24v-61.691c9.951-11.281 16-26.085 16-42.309v-48c0-24.003-13.222-44.907-32.772-55.86l-.052-.14h28.815a12 12 0 0 0 11.384-8.205l8-24c2.59-7.771-3.193-15.795-11.384-15.795zm-365.388 1.528C143.918 144.689 168 128 194.528 128h122.944c26.528 0 50.61 16.689 59.925 41.528L391.824 208H120.176l14.427-38.472zM88 328c-17.673 0-32-14.327-32-32 0-17.673 14.327-32 32-32s48 30.327 48 48-30.327 16-48 16zm336 0c-17.673 0-48 1.673-48-16 0-17.673 30.327-48 48-48s32 14.327 32 32c0 17.673-14.327 32-32 32z"/>
+                        </g>
+                    )}
                 </svg>
-                {customerPosition && <div className="icon" style={customerStyle}><i className="fas fa-user"/></div>}
-                {courierPosition && <div className="icon" style={courierStyle}><i className="fas fa-car"/></div>}
                 {showBtnSimulation && (
                     <i className={`btn-simulation far fa-${!this.simulationOngoing ? 'play' : 'pause'}-circle`} onClick={this.onBtnSimulationClick}/>
                 )}
