@@ -11,6 +11,7 @@
 
 .app .wrapper {
     position: relative;
+    border: 2px solid black;
 }
 
 .app .toolbar {
@@ -88,7 +89,7 @@
 
 .app .toolbar .btn.disabled {
     opacity: 0.5;
-    cursor: not-allowed;
+    cursor: default;
 }
 
 .app .selector {

@@ -136,7 +136,7 @@ class App extends React.Component {
             }
             else {
                 this.key++
-                this.setState(this.getInitialState())
+                this.setState(_.merge(this.getInitialState(), {activeMapIndex: (this.state.activeMapIndex + 1) % MAPS.length}))
             }
         }
     }
@@ -162,7 +162,7 @@ class App extends React.Component {
                             ))}
                         </div>
                     )}
-                    {!BUILDER && <Map key={this.key} step={step} image={activeMap.image}
+                    {!BUILDER && <Map key={this.key} step={step} image={activeMap.image} dimensions={activeMap.dimensions}
                                       graph={activeMap.graph}
                                       initialCustomerPosition={customer}
                                       restaurants={step > STEPS.CHOOSE_RESTAURANT ? activeMap.restaurants[restaurantSelectedIndex] : activeMap.restaurants}
@@ -196,8 +196,8 @@ class App extends React.Component {
                         <i className="fas fa-paper-plane"/>
                         <span>Simulate courier to customer</span>
                     </div>
-                    <nav className={`btn${(frozen || !this.canGoNext()) ? ' disabled' : ''}`} onClick={this.goToNextStep}>
-                        {step < STEPS.SIMULATE_COURIER_TO_CUSTOMER ? 'NEXT' : 'RESTART'}
+                    <nav className={`btn${(frozen || !this.canGoNext()) ? ' disabled' : ''}`} title="(ENTER)" onClick={this.goToNextStep}>
+                        {step < STEPS.SIMULATE_COURIER_TO_CUSTOMER || activeMapIndex < MAPS.length - 1 ? 'NEXT' : 'RESTART'}
                     </nav>
                 </div>
             </div>

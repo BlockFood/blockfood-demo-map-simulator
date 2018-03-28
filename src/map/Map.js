@@ -52,6 +52,7 @@ class Map extends React.Component {
 
         this.onClick = this.onClick.bind(this)
         this.onBtnSimulationClick = this.onBtnSimulationClick.bind(this)
+        this.onRandomAction = this.onRandomAction.bind(this)
     }
 
     computeGraphLines(graph) {
@@ -68,6 +69,13 @@ class Map extends React.Component {
         })
 
         return graphLines
+    }
+
+    allowSimulation() {
+        const {step} = this.props
+        const {path1, path2} = this.state
+
+        return (step === STEPS.SIMULATE_COURIER_TO_RESTAURANT && path1.length > 0) || (step === STEPS.SIMULATE_COURIER_TO_CUSTOMER && path2.length > 0)
     }
 
     getPathFromListOfPoints(points) {
@@ -328,9 +336,37 @@ class Map extends React.Component {
         }
     }
 
+    onRandomAction(event) {
+        if (event.keyCode === 32) {
+            const {step, dimensions, restaurants} = this.props
+
+            if (this.allowSimulation()) {
+                this.onBtnSimulationClick()
+            }
+            else if (step === STEPS.CHOOSE_RESTAURANT) {
+                const restaurantIndex = ((this.state.selectedRestaurantIndex || 0) + 1) % restaurants.length
+                const event = {
+                    offsetX: restaurants[restaurantIndex].position[0],
+                    offsetY: restaurants[restaurantIndex].position[1]
+                }
+                this.onClick(event)
+            }
+
+            else {
+                const event = {
+                    offsetX: _.random(0, dimensions.width),
+                    offsetY: _.random(0, dimensions.height)
+                }
+                this.onClick(event)
+            }
+        }
+    }
+
     componentDidMount() {
         this.containerElement = ReactDOM.findDOMNode(this)
+
         this.containerElement.addEventListener('click', this.onClick, false)
+        window.addEventListener('keydown', this.onRandomAction, false)
     }
 
     componentDidUpdate(_prevProps, prevState) {
@@ -344,6 +380,7 @@ class Map extends React.Component {
 
     componentWillUnmount() {
         this.containerElement.removeEventListener('click', this.onClick, false)
+        window.removeEventListener('keydown', this.onRandomAction, false)
     }
 
     render() {
@@ -351,8 +388,6 @@ class Map extends React.Component {
         const {customerPosition, courierPosition, path1, success1, path2, success2} = this.state
 
         const selectedRestaurantIndex = step === STEPS.CHOOSE_RESTAURANT ? this.state.selectedRestaurantIndex : null
-
-        const showBtnSimulation = (step === STEPS.SIMULATE_COURIER_TO_RESTAURANT && path1.length > 0) || (step === STEPS.SIMULATE_COURIER_TO_CUSTOMER && path2.length > 0)
 
         return (
             <div className="map">
@@ -382,8 +417,9 @@ class Map extends React.Component {
                         </g>
                     )}
                 </svg>
-                {showBtnSimulation && (
-                    <i className={`btn-simulation far fa-${!this.simulationOngoing ? 'play' : 'pause'}-circle`} onClick={this.onBtnSimulationClick}/>
+                {this.allowSimulation() && (
+                    <i className={`btn-simulation far fa-${!this.simulationOngoing ? 'play' : 'pause'}-circle`}
+                       title="(SPACE)" onClick={this.onBtnSimulationClick}/>
                 )}
                 {success1 && <Success x={success1[0]} y={success1[1]}/>}
                 {success2 && <Success x={success2[0]} y={success2[1]}/>}

@@ -5,8 +5,6 @@
     width: 100%;
     height: 100%;
     pointer-events: none;
-    border: 2px solid black;
-    box-sizing: border-box;
 }
 
 .map-builder svg .current {
@@ -15,5 +13,6 @@
 
 .map-builder svg line {
     stroke: black;
-    stroke-width: 2px;
+    stroke-width: 6px;
+    stroke-opacity: 0.3;
 }
