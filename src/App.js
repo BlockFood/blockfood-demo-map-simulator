@@ -6,9 +6,12 @@ import Map, {STEPS} from './map/Map'
 import './App.css'
 
 import Map1 from './data/Map1'
+import Map2 from './data/Map2'
 
-const ACTIVE_MAP = Map1
+const MAPS = [Map1, Map2]
+
 const BUILDER = false
+const DEFAULT_MAP_INDEX = 1
 const SHOW_MAP = false
 
 class App extends React.Component {
@@ -18,7 +21,7 @@ class App extends React.Component {
         this.key = 0
 
         // DEBUG STEP SET_CUSTOMER_POSITION
-        this.state = this.getInitialState()
+        this.state = _.merge(this.getInitialState(), {activeMapIndex: DEFAULT_MAP_INDEX})
 
         // DEBUG STEP CHOOSE_RESTAURANT
         // this.state = _.merge(this.state, {
@@ -59,6 +62,7 @@ class App extends React.Component {
         this.onDeliveryDone = this.onDeliveryDone.bind(this)
         this.canGoNext = this.canGoNext.bind(this)
         this.goToNextStep = this.goToNextStep.bind(this)
+        this.selectMapFunctions = _.map(MAPS, (map, index) => () => this.selectMap(index))
     }
 
     getInitialState() {
@@ -70,6 +74,13 @@ class App extends React.Component {
             courier: null,
             pickingDone: false,
             deliveryDone: false,
+        }
+    }
+
+    selectMap(index) {
+        if (index !== this.state.activeMapIndex) {
+            this.key++
+            this.setState(_.merge(this.getInitialState(), {activeMapIndex: index}))
         }
     }
 
@@ -134,15 +145,26 @@ class App extends React.Component {
     }
 
     render() {
-        const {step, frozen, customer, restaurantSelectedIndex, courier} = this.state
+        const {activeMapIndex, step, frozen, customer, restaurantSelectedIndex, courier} = this.state
+        const activeMap = MAPS[activeMapIndex]
 
         return (
             <div className="app">
-                <div className="wrapper" style={ACTIVE_MAP.dimensions}>
-                    {!BUILDER && <Map key={this.key} step={step} image={ACTIVE_MAP.image}
-                                      graph={ACTIVE_MAP.graph}
+                <div className="wrapper" style={activeMap.dimensions}>
+                    {!BUILDER && (
+                        <div className="selector">
+                            {_.map(MAPS, (map, index) => (
+                                <div key={index} className={activeMapIndex === index ? 'active' : ''} onClick={this.selectMapFunctions[index]}>
+                                    Map {index + 1}
+                                    <i style={{background: `url(${map.image})`, display: 'none'}}/>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                    {!BUILDER && <Map key={this.key} step={step} image={activeMap.image}
+                                      graph={activeMap.graph}
                                       initialCustomerPosition={customer}
-                                      restaurants={step > STEPS.CHOOSE_RESTAURANT ? ACTIVE_MAP.restaurants[restaurantSelectedIndex] : ACTIVE_MAP.restaurants}
+                                      restaurants={step > STEPS.CHOOSE_RESTAURANT ? activeMap.restaurants[restaurantSelectedIndex] : activeMap.restaurants}
                                       initialCourierPosition={courier}
                                       onCustomerSet={this.onCustomerSet}
                                       onRestaurantSelected={this.onRestaurantSelected}
@@ -150,7 +172,7 @@ class App extends React.Component {
                                       onPickingDone={this.onPickingDone}
                                       onDeliveryDone={this.onDeliveryDone}
                                       onActionStart={this.onActionStart} onActionEnd={this.onActionEnd}/>}
-                    {(BUILDER || SHOW_MAP) && <Builder showMapOnly={!BUILDER} mapData={ACTIVE_MAP}/>}
+                    {(BUILDER || SHOW_MAP) && <Builder showMapOnly={!BUILDER} mapData={activeMap}/>}
                 </div>
                 <div className="toolbar">
                     <div className={`step${step >= STEPS.SET_CUSTOMER_POSITION ? ' active' : ''}`}>

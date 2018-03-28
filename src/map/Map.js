@@ -357,6 +357,10 @@ class Map extends React.Component {
         return (
             <div className="map">
                 <img src={image} alt="" draggable="false"/>
+                <svg>
+                    {path1 && <path d={this.getPathFromListOfPoints(path1)}/>}
+                    {path2 && <path d={this.getPathFromListOfPoints(path2)} style={{strokeDasharray: step < STEPS.SIMULATE_COURIER_TO_CUSTOMER ? 7 : 0}}/>}
+                </svg>
                 {_.map(_.isArray(restaurants) ? restaurants : [restaurants], (restaurant, index) => (
                     <div key={index} className={`restaurant ${restaurant.labelDirection}${selectedRestaurantIndex !== null && selectedRestaurantIndex !== index ? ' not-selected' : ''}`}
                          style={{transform: `translate(${restaurant.position[0]}px, ${restaurant.position[1]}px)`}}>
@@ -365,8 +369,6 @@ class Map extends React.Component {
                     </div>
                 ))}
                 <svg>
-                    {path1 && <path d={this.getPathFromListOfPoints(path1)}/>}
-                    {path2 && <path d={this.getPathFromListOfPoints(path2)} style={{strokeDasharray: step < STEPS.SIMULATE_COURIER_TO_CUSTOMER ? 7 : 0}}/>}
                     {customerPosition && (
                         <g transform={`translate(${customerPosition[0]}, ${customerPosition[1]})`}>
                             <circle cx="0" cy="0" r="15"/>

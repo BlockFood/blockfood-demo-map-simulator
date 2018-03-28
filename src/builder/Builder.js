@@ -43,11 +43,14 @@ class Builder extends React.Component {
 
             if (nearestNodeId && selectedNodeId) {
                 const dist = distance(graph[selectedNodeId].position, graph[nearestNodeId].position)
-                const newGraph = _.assign({}, graph)
-                newGraph[selectedNodeId].connections[nearestNodeId] = dist
-                newGraph[nearestNodeId].connections[selectedNodeId] = dist
 
-                this.setState({graph: newGraph, selectedNodeId: nearestNodeId})
+                if (dist !== 0) {
+                    const newGraph = _.assign({}, graph)
+                    newGraph[selectedNodeId].connections[nearestNodeId] = dist
+                    newGraph[nearestNodeId].connections[selectedNodeId] = dist
+
+                    this.setState({graph: newGraph, selectedNodeId: nearestNodeId})
+                }
             }
             else if (nearestNodeId) {
                 this.setState({selectedNodeId: nearestNodeId})
@@ -113,7 +116,7 @@ class Builder extends React.Component {
                     ))}
                     {_.map(_.keys(graph), nodeId => (
                         <circle key={nodeId} className={nodeId === selectedNodeId ? 'current' : ''}
-                                cx={graph[nodeId].position[0]} cy={graph[nodeId].position[1]} r="3.5"/>
+                                cx={graph[nodeId].position[0]} cy={graph[nodeId].position[1]} r="3"/>
                     ))}
                 </svg>
             </div>
